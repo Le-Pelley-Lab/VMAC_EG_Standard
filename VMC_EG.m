@@ -30,21 +30,21 @@ global couldHaveWonVersion
 global laptopVersion viewDistance monitorDims
 
 eyeVersion = false; % set to true to run eyetracker, otherwise uses mouse position
-realVersion = false; % set to true for correct numbers of trials etc.
+realVersion = true; % set to true for correct numbers of trials etc.
 laptopVersion = false; % set to true to scale stimuli for laptop screen dimensions
-contingencyInformedVersion = false; % set to true to inform participants about the colour-reward contingencies
+contingencyInformedVersion = true; % set to true to inform participants about the colour-reward contingencies
 omissionInformedVersion = true; % set to true to inform participants about the omission contingency at start + trial by trial
-couldHaveWonVersion = true; % set to true to tell participants what they could have won on omission/timeout trials.
+couldHaveWonVersion = false; % set to true to tell participants what they could have won on omission/timeout trials.
 
 commandwindow;
 
 if realVersion
-    screenNum = 0;
+    screenNum = max('Screens');
     Screen('Preference', 'SkipSyncTests', 0); % Enables PTB calibration
-    awareInstrPause = 18;
+    awareInstrPause = 12;
 else
     screens = Screen('Screens');
-    screenNum = 1; %max(screens);
+    screenNum = 2; %max(screens);
     Screen('Preference', 'SkipSyncTests', 2); %Skips PTB calibrations
     fprintf('\n\nEXPERIMENT IS BEING RUN IN DEBUGGING MODE!!! IF YOU ARE RUNNING A ''REAL'' EXPT, QUIT AND CHANGE realVersion TO true\n\n');
     awareInstrPause = 1;
@@ -135,7 +135,7 @@ if realVersion
     
     colBalance = 0;
     while colBalance < 1 || colBalance > counterbalConditions
-        colBalance = input(['Counterbalance (1-', num2str(counterbalConditions), ')---> ');
+        colBalance = input(['Counterbalance (1-', num2str(counterbalConditions), ')---> ']);
         if isempty(colBalance); colBalance = 0; end
     end
     
@@ -187,7 +187,7 @@ DATA.age = p_age;
 DATA.sex = p_sex;
 DATA.genderInfo = p_genderInfo;
 DATA.hand = p_hand;
-DATA.group = p_group;
+%DATA.group = p_group;
 DATA.start_time = datestr(now,0);
 if eyeVersion
     DATA.trackerID = trackerId;
