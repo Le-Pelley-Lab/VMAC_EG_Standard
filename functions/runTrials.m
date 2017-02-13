@@ -13,6 +13,7 @@ global awareInstrPause
 global starting_total_points
 global realVersion eyeVersion
 global omissionInformedVersion couldHaveWonVersion
+global maxPoints
 
 gamma = 0.2;    % Controls smoothing of displayed gaze location. Lower values give more smoothing
 
@@ -44,7 +45,8 @@ if realVersion
     
     blocksPerBreak = 2;
     
-    singlePerBlock = [0, 12];
+    singlePerBlock = [0, 12];   % number of single distractor trials per block in each phase
+    absentPerBlock = [0, 4];    % number of distractor absent trials per block in each phase
     %doublePerBlock = [0, 4, 11];
     
 else
@@ -72,6 +74,7 @@ else
     blocksPerBreak = 1;
     
     singlePerBlock = [0, 1];
+    absentPerBlock = [0, 1];
     %doublePerBlock = [0, 1, 1];
 end
 
@@ -97,19 +100,18 @@ else
     numTrialTypes = numSingleDistractType;
     
     winMultiplier = zeros(2,1);     % winMultiplier is a bad name now; it's actually the amount that they win
-    winMultiplier(1) = bigMultiplier;         % High-val, omission distractors
-    winMultiplier(2) = smallMultiplier;     % Low val, omission distractors
-%     winMultiplier(3) = smallMultiplier;         % Low value, omission
-%     winMultiplier(4) = smallMultiplier;     % Low value, yoked
-%     winMultiplier(5) = 0;   %double distractor high val, no reward given
-%     winMultiplier(6) = 0;   %double distractor low val, no reward given
+    winMultiplier(1) = bigMultiplier;         % High-val distractor
+    winMultiplier(2) = smallMultiplier;     % Low val distractor
+    winMultiplier(3) = smallMultiplier;         % Distractor Absent
+
     
     numSingleDistractPerBlock = singlePerBlock(exptPhase);
+    numAbsentDistractPerBlock = absentPerBlock(exptPhase);
     %numDoubleDistractPerBlock = doublePerBlock(exptPhase);
     
     numExptBlocks = numExptBlocksPhase(exptPhase);
     
-    exptTrialsPerBlock = numSingleDistractType * numSingleDistractPerBlock;
+    exptTrialsPerBlock = numSingleDistractType * numSingleDistractPerBlock + numAbsentDistractPerBlock;
     
     trialTypeArray = zeros(exptTrialsPerBlock, 1);
     
@@ -121,12 +123,11 @@ else
         end
     end
     
-%     for ii = numSingleDistractType + 1 : numSingleDistractType + numDoubleDistractType
-%         for jj = 1 : numDoubleDistractPerBlock
-%             loopCounter = loopCounter + 1;
-%             trialTypeArray(loopCounter) = ii;
-%         end
-%     end
+    loopCounter = loopCounter + 1;
+    for jj = loopCounter : exptTrialsPerBlock
+        trialTypeArray(jj) = numSingleDistractType + 1;
+    end
+    
     
     numTrials = numExptBlocks * exptTrialsPerBlock;
     
@@ -135,6 +136,10 @@ end
 shTrialTypeArray = shuffleTrialorder(trialTypeArray, exptPhase);
 
 exptTrialsBeforeBreak = exptTrialsPerBlock * blocksPerBreak;
+
+maxPointsPerBlock = sum(numSingleDistractPerBlock * winMultiplier(1:numSingleDistractType)) + numAbsentDistractPerBlock * winMultiplier(numSingleDistractType + 1);
+
+maxPoints = maxPointsPerBlock * sum(numExptBlocksPhase(2:end));
 
 if ~eyeVersion
     ShowCursor('Arrow');

@@ -35,6 +35,8 @@ laptopVersion = false; % set to true to scale stimuli for laptop screen dimensio
 contingencyInformedVersion = true; % set to true to inform participants about the colour-reward contingencies
 omissionInformedVersion = true; % set to true to inform participants about the omission contingency at start + trial by trial
 couldHaveWonVersion = false; % set to true to tell participants what they could have won on omission/timeout trials.
+maxDollaridoos = 17.5;    %this is the maximum amount that someone can win with perfect performance (in dollars)
+minDollaridoos = 7.1;   %this is the minimum amount that someone can win with perfect performance (in dollars)
 
 commandwindow;
 
@@ -301,29 +303,25 @@ phaseLength(2) = runTrials(2);
 awareInstructions;
 awareTest;
 
-%sessionBonus = sessionPoints / 160;   % convert points into cents at rate of 13 000 points = $1. Updated 13/5.
+pointsDenominator = findPointsDenominator(maxDollaridoos);
 
-%sessionBonus = 10 * ceil(sessionBonus/10);        % ... round this value UP to nearest 10 cents
-%sessionBonus = sessionBonus / 100;    % ... then convert back to dollars
+sessionBonus = sessionPoints / pointsDenominator;   % convert points into cents at rate of 13 000 points = $1. Updated 13/5.
 
-%DATA.session_Bonus = sessionBonus;
+sessionBonus = 10 * ceil(sessionBonus/10);        % ... round this value UP to nearest 10 cents
+sessionBonus = sessionBonus / 100;    % ... then convert back to dollars
+
+if sessionBonus < minDollaridoos
+    sessionBonus = minDollaridoos;
+end
+
+DATA.session_Bonus = sessionBonus;
 DATA.session_Points = sessionPoints;
 
-%totalBonus = starting_total + sessionBonus;
-
-% if totalBonus < 7.10        %check to see if participant earned less than $10.10; if so, adjust payment upwards
-%     actual_bonus_payment = 7.10;
-% else
-%     actual_bonus_payment = totalBonus;
-% end
-% 
-% DATA.totalBonus = totalBonus;
-% DATA.actualTotalBonus = actual_bonus_payment;
 DATA.end_time = datestr(now,0);
 
 save(datafilename, 'DATA');
 
-[~, ny, ~] = DrawFormattedText(MainWindow, ['SESSION COMPLETE\n\nPoints in this session = ', separatethousands(sessionPoints, ',')], 'center', 'center' , white, [], [], [], 1.4);
+[~, ny, ~] = DrawFormattedText(MainWindow, ['SESSION COMPLETE\n\nPoints in this session = ', separatethousands(sessionPoints, ','), '\n\nTotal Bonus = ', num2str(sessionBonus, '%0.2f')], 'center', 'center' , white, [], [], [], 1.4);
 
 fid1 = fopen('BehavData\_TotalBonus_summary.csv', 'a');
 fprintf(fid1,'%d,%f\n', p_number, sessionPoints);
